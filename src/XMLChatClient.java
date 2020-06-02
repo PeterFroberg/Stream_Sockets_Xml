@@ -1,27 +1,21 @@
-import org.jdom2.Document;
-
 import javax.swing.*;
 import java.awt.*;
 
 public class XMLChatClient extends JFrame {
-    /**
-     * Create GUI components for the application
-     */
-    public static JTextArea textArea = new JTextArea("");
+    // Create GUI components for the application
+    private   JTextArea textArea = new JTextArea("");
     private JTextField jTextFieldName = new JTextField();
     private JTextField jTextFieldEmail = new JTextField();
     private JTextField jTextFieldHomePage = new JPasswordField();
     private JTextField jTextFieldMessage = new JTextField();
-    private JButton sendButton = new JButton("Send");
 
-    private ChatClient chatClient = null;
-    private XmlChatMessageDocument xmlChatMessageDocument = new XmlChatMessageDocument();
+    private ChatClient chatClient;
+    private XmlDocumentHandler xmlDocumentHandler = new XmlDocumentHandler();
 
     public XMLChatClient() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        /**
-         * Setting up GUI space, by adding GUI components
-         */
+
+        //Setting up GUI space, by adding GUI components
         JPanel jPanelSouth = new JPanel();
         jPanelSouth.setLayout(new GridLayout(7, 2));
         jPanelSouth.add(new JLabel("Name:"));
@@ -33,22 +27,19 @@ public class XMLChatClient extends JFrame {
         jPanelSouth.add(new JLabel("Message:"));
         jPanelSouth.add(this.jTextFieldMessage);
         jPanelSouth.add(new JLabel("Send"));
-        jPanelSouth.add(this.sendButton);
+        JButton sendButton = new JButton("Send");
+        jPanelSouth.add(sendButton);
 
-        /**
-         * creates a ActionListener for the submit button by using lambda expression
-         * that use function submitButtonClicked()
-         */
+        // creates a ActionListener for the submit button by using lambda expression
+        // that use function submitButtonClicked()
         sendButton.addActionListener(e -> {
             sendButtonClicked();
         });
-        getContentPane().add("Center", new JScrollPane(this.textArea));
+        getContentPane().add("Center", new JScrollPane(textArea));
         getContentPane().add("South", jPanelSouth);
         setSize(640, 480);
         setVisible(true);
-        chatClient = new ChatClient("atlas.dsv.su.se", 9494);
-
-
+        chatClient = new ChatClient("atlas.dsv.su.se", 9494, this);
     }
 
     /**
@@ -59,13 +50,14 @@ public class XMLChatClient extends JFrame {
      * and finnaly gets new comments from the database
      */
     private void sendButtonClicked() {
-        Document doc = xmlChatMessageDocument.createXmlChatMessageDocument(jTextFieldName.getText(), jTextFieldEmail.getText(),jTextFieldHomePage.getText(),jTextFieldMessage.getText());
-        String xmlString = xmlChatMessageDocument.convertToString(doc);
+        String xmlString = xmlDocumentHandler.createXmlChatMessageDocument(jTextFieldName.getText(), jTextFieldEmail.getText(), jTextFieldHomePage.getText(), jTextFieldMessage.getText());
+
         chatClient.sendMessage(xmlString);
-        
     }
 
-
+    public void addChatMessage(String newChatMEssage){
+        textArea.append("\n" + newChatMEssage);
+    }
 
     public static void main(String[] args) {
         new XMLChatClient();

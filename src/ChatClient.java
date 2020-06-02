@@ -1,26 +1,35 @@
+import org.jdom2.Document;
+import org.jdom2.Element;
+
 import java.io.*;
 import java.net.Socket;
 
 public class ChatClient {
 
-
     private Socket socket;
-    private OutputStream outputStream;
-    private DataOutputStream dataOutputStream;
     private BufferedReader socketReader;
     private PrintWriter socketWriter;
 
-    public ChatClient(String host, int port){
+    private XmlDocumentHandler xmlDocumentHandler = new XmlDocumentHandler();
+    private XMLChatClient xmlChatClient;
+
+    /**
+     * The constructor sets uo the connection to the chat server
+     * @param host - Host name or IP-adress to the server
+     * @param port - Communication port to the server
+     */
+    public ChatClient(String host, int port, XMLChatClient xmlChatClient) {
         try {
+            this.xmlChatClient = xmlChatClient;
+            //Connect to the server on host and port
             socket = new Socket(host, port);
             System.out.println("Connected!");
 
+            //Prepares the streams for communication
             socketWriter = new PrintWriter(socket.getOutputStream(), true);
             socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            outputStream = socket.getOutputStream();
-            dataOutputStream = new DataOutputStream(outputStream);
-
+            //Starts a receiver for messages from the server
             startReceiver();
 
         } catch (IOException e) {
@@ -28,45 +37,53 @@ public class ChatClient {
         }
     }
 
-    private void startReceiver(){
+    /**
+     * Start a reciver Thread for the Chat client that listens for new messages from the server
+     */
+    private void startReceiver() {
         new Thread(() -> {
             try {
-                /**
-                 * Keeps the receiver alive for the client
-                 */
+                // Keeps the receiver alive for the client
+                while (true) {
+                    if (socketReader.ready()) {
+                        String line = socketReader.readLine();
 
-                    while (true) {
-                        if (socketReader.ready()) {
-                            String line = socketReader.readLine();
-                            System.out.println(line);
-                            XMLChatClient.textArea.setText(XMLChatClient.textArea.getText() + "\n" + line);
-                        }
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        //Add new message to chatWindow
+                        String newChatMEssage = xmlDocumentHandler.parseXML(line, "body");
+                        xmlChatClient.addChatMessage(newChatMEssage);
                     }
-            }
-            catch (IOException e) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                closeConnection();
             }
 
         }).start();
     }
 
-    public void sendMessage(String message){
-            socketWriter.println(message);
+    /**
+     * Sends message to the server
+     * @param message - messge to send
+     */
+    public void sendMessage(String message) {
+        socketWriter.println(message);
     }
 
-    public void closeConnection(){
+    /**
+     * Closes the connection to the server
+     */
+    public void closeConnection() {
         try {
-            dataOutputStream.close();
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 }
