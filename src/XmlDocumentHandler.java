@@ -21,7 +21,7 @@ public class XmlDocumentHandler {
      * @param body     - body
      * @return return the XML document
      */
-    public String createXmlChatMessageDocument(String name, String email, String homepage, String body) {
+    public Document createXmlChatMessageDocument(String name, String email, String homepage, String body) {
         Element messageElement = new Element("message");
         Element headerElement = new Element("header");
         Element protocolElement = new Element("protocol");
@@ -60,8 +60,8 @@ public class XmlDocumentHandler {
 
         DocType docType = new DocType("message", "1//PW//Example//123", "https://atlas.dsv.su.se/~pierre/i/05_ass/ip1/2/2.1.3/message.dtd");
         Document doc = new Document(messageElement, docType);
-        printXmlDoc(doc);
-        return convertToString(doc);
+
+        return doc;
     }
 
     /**
@@ -77,6 +77,10 @@ public class XmlDocumentHandler {
         return xmlOutputter.outputString(doc);
     }
 
+    /**
+     * Prints a XML document to the console in pretty format
+     * @param doc - document to print
+     */
     public void printXmlDoc(Document doc){
 
         XMLOutputter xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
@@ -89,7 +93,7 @@ public class XmlDocumentHandler {
     }
 
     /**
-     * Parse out the message from an xmlString
+     * Parse out the message from an xmlString and print the XML document to the console
      * @param xmlString - the xmlString to get the message from
      * @param attribute - Which atttribut to read the message from
      * @return returns the text message found in the attribute specified by the attribute parameter

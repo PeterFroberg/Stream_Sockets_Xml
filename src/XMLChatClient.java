@@ -1,3 +1,5 @@
+import org.jdom2.Document;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -50,13 +52,22 @@ public class XMLChatClient extends JFrame {
      * and finnaly gets new comments from the database
      */
     private void sendButtonClicked() {
-        String xmlString = xmlDocumentHandler.createXmlChatMessageDocument(jTextFieldName.getText(), jTextFieldEmail.getText(), jTextFieldHomePage.getText(), jTextFieldMessage.getText());
+        Document doc = xmlDocumentHandler.createXmlChatMessageDocument(jTextFieldName.getText(), jTextFieldEmail.getText(), jTextFieldHomePage.getText(), jTextFieldMessage.getText());
+        //Print XML document to the console
+        xmlDocumentHandler.printXmlDoc(doc);
+        //Convert XML document to string
+        String xmlString = xmlDocumentHandler.convertToString(doc);
 
+        //Send XML String to server
         chatClient.sendMessage(xmlString);
     }
 
-    public void addChatMessage(String newChatMEssage){
-        textArea.append("\n" + newChatMEssage);
+    /**
+     * Add chat message to textarea(GUI)
+     * @param newChatMessage - message to add
+     */
+    public void addChatMessage(String newChatMessage){
+        textArea.append("\n" + newChatMessage);
     }
 
     public static void main(String[] args) {
